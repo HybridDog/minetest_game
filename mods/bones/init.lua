@@ -163,7 +163,7 @@ minetest.register_on_dieplayer(function(player)
 
 	local bones_mode = minetest.setting_get("bones_mode") or "bones"
 	if bones_mode ~= "bones" and bones_mode ~= "drop" and bones_mode ~= "keep" then
-		bones_mode = "bones"
+		error("unknown bones mode: "..bones_mode)
 	end
 
 	-- return if keep inventory set or in creative mode
