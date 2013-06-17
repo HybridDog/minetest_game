@@ -251,6 +251,7 @@ function default.register_ores()
 
 	-- Coal
 
+
 	minetest.register_ore({
 		ore_type       = "scatter",
 		ore            = "default:stone_with_coal",
@@ -481,6 +482,31 @@ function default.register_ores()
 		clust_size     = 2,
 		y_min          = -31000,
 		y_max          = -1024,
+	})
+
+	-- Tin
+
+	minetest.register_ore({
+		ore_type       = "scatter",
+		ore            = "default:stone_with_tin",
+		wherein        = "default:stone",
+		clust_scarcity = 10*10*10,
+		clust_num_ores = 2,
+		clust_size     = 3,
+		height_min     = -63,
+		height_max     = -16,
+	})
+
+	minetest.register_ore({
+		ore_type       = "scatter",
+		ore            = "default:stone_with_tin",
+		wherein        = "default:stone",
+		clust_scarcity = 7*7*7,
+		clust_num_ores = 3,
+		clust_size     = 3,
+		height_min     = -31000,
+		height_max     = -64,
+		flags          = "absheight",
 	})
 end
 
