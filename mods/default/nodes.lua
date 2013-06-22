@@ -953,6 +953,7 @@ minetest.register_node("default:pine_tree", {
 	sounds = default.node_sound_wood_defaults(),
 
 	on_place = minetest.rotate_node
+
 })
 
 minetest.register_node("default:pine_wood", {
