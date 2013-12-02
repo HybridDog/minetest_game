@@ -751,6 +751,9 @@ minetest.register_node("default:junglesapling", {
 
 		return itemstack
 	end,
+	after_dig_node = function(pos, node, metadata, digger)
+		default.dig_up(pos, node, digger)
+	end,
 })
 
 
