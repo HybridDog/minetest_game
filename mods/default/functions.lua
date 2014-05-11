@@ -134,14 +134,62 @@ end
 -- Lavacooling
 --
 
-default.cool_lava = function(pos, node)
-	if node.name == "default:lava_source" then
-		minetest.set_node(pos, {name = "default:obsidian"})
-	else -- Lava flowing
-		minetest.set_node(pos, {name = "default:stone"})
+local function cool_wf_vm(pos, node1, node2)
+	local t1 = os.clock()
+	local minp = vector.subtract(pos, 10)
+	local maxp = vector.add(pos, 10)
+	local manip = minetest.get_voxel_manip()
+	local emerged_pos1, emerged_pos2 = manip:read_from_map(minp, maxp)
+	local area = VoxelArea:new({MinEdge=emerged_pos1, MaxEdge=emerged_pos2})
+	local nodes = manip:get_data()
+
+	local stone = minetest.get_content_id(node2)
+	local lava = minetest.get_content_id(node1)
+
+	for x = minp.x, maxp.x do
+		for y = minp.y, maxp.y do
+			for z = minp.z, maxp.z do
+				local p = {x=x, y=y, z=z}
+				local p_p = area:indexp(p)
+				if nodes[p_p] == lava
+				and minetest.find_node_near(p, 1, {"group:water"}) then
+					nodes[p_p] = stone
+				end
+			end
+		end
 	end
-	minetest.sound_play("default_cool_lava",
-		{pos = pos, max_hear_distance = 16, gain = 0.25})
+
+
+	manip:set_data(nodes)
+	manip:write_to_map()
+	print(string.format("[lavacooling] cooled at ("..pos.x.."|"..pos.y.."|"..pos.z..") after ca. %.2fs", os.clock() - t1))
+	local t1 = os.clock()
+	manip:update_map()
+	print(string.format("[lavacooling] map updated after ca. %.2fs", os.clock() - t1))
+end
+
+
+local del1 = 0
+local count = 0
+
+local converts = {
+	["default:lava_source"] = "default:obsidian",
+	["default:lava_flowing"] = "default:stone"
+}
+function default.cool_lava(pos, node)
+	local result = converts[node.name]
+	local del2 = tonumber(os.clock())
+	if del2-del1 < 0.1
+	and count > 10 then
+		cool_wf_vm(pos, node.name, result)
+		count = 0
+	else
+		minetest.set_node(pos, {name=result})
+		minetest.sound_play("default_cool_lava", {pos = pos,  gain = 0.25})
+		if del2-del1 < 0.1 then
+			count = count+1
+		end
+	end
 end
 
 if minetest.settings:get_bool("enable_lavacooling") ~= false then
