@@ -83,11 +83,8 @@ minetest.register_node("bones:bones", {
 	end,
 
 	on_punch = function(pos, node, player)
-		if not is_owner(pos, player:get_player_name()) then
-			return
-		end
-
-		if minetest.get_meta(pos):get_string("infotext") == "" then
+		if not is_owner(pos, player:get_player_name())
+		or minetest.get_meta(pos):get_string"infotext" == "" then
 			return
 		end
 
@@ -95,7 +92,7 @@ minetest.register_node("bones:bones", {
 		local player_inv = player:get_inventory()
 		local has_space = true
 
-		for i = 1, inv:get_size("main") do
+		for i = 1, inv:get_size"main" do
 			local stk = inv:get_stack("main", i)
 			if player_inv:room_for_item("main", stk) then
 				inv:set_stack("main", i, nil)
