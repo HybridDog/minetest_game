@@ -134,6 +134,22 @@ end
 -- Lavacooling
 --
 
+local function smoke_and_sound(pos)
+	minetest.sound_play("default_cool_lava", {pos = pos,  gain = 0.25})
+	minetest.add_particlespawner({
+		amount = 3,
+		time = 0.1,
+		minpos = vector.subtract(pos, 0.2),
+		maxpos = vector.add(pos, 0.2),
+		minacc = {x=-0.5,y=5,z=-0.5},
+		maxacc = {x=0.5,y=5,z=0.5},
+		minexptime = 0.1,
+		minsize = 2,
+		maxsize = 8,
+		texture = "smoke_puff.png"
+	})
+end
+
 local function cool_wf_vm(pos, node1, node2)
 	local t1 = os.clock()
 	local minp = vector.subtract(pos, 10)
@@ -162,10 +178,11 @@ local function cool_wf_vm(pos, node1, node2)
 
 	manip:set_data(nodes)
 	manip:write_to_map()
-	print(string.format("[lavacooling] cooled at ("..pos.x.."|"..pos.y.."|"..pos.z..") after ca. %.2fs", os.clock() - t1))
+	print(string.format("[default] lava cooled at ("..pos.x.."|"..pos.y.."|"..pos.z..") after ca. %.2fs", os.clock() - t1))
 	local t1 = os.clock()
 	manip:update_map()
-	print(string.format("[lavacooling] map updated after ca. %.2fs", os.clock() - t1))
+	manip:update_liquids()
+	print(string.format("[default] map updated after ca. %.2fs", os.clock() - t1))
 end
 
 
@@ -185,7 +202,7 @@ function default.cool_lava(pos, node)
 		count = 0
 	else
 		minetest.set_node(pos, {name=result})
-		minetest.sound_play("default_cool_lava", {pos = pos,  gain = 0.25})
+		smoke_and_sound(pos)
 		if del2-del1 < 0.1 then
 			count = count+1
 		end
