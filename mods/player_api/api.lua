@@ -95,6 +95,8 @@ end)
 local player_set_animation = player_api.set_animation
 local player_attached = player_api.player_attached
 
+local ps = {}
+
 -- Check each player and apply animations
 minetest.register_globalstep(function(dtime)
 	for _, player in pairs(minetest.get_connected_players()) do
@@ -111,28 +113,25 @@ minetest.register_globalstep(function(dtime)
 				walking = true
 			end
 
-			-- Determine if the player is sneaking, and reduce animation speed if so
-			if controls.sneak then
-				animation_speed_mod = animation_speed_mod / 2
-			end
+			local controls = player:get_player_control()
 
 			-- Apply animations based on what the player is doing
 			if player:get_hp() == 0 then
 				player_set_animation(player, "lay")
-			elseif walking then
+			elseif v then
 				if player_sneak[name] ~= controls.sneak then
 					player_anim[name] = nil
 					player_sneak[name] = controls.sneak
 				end
 				if controls.LMB then
-					player_set_animation(player, "walk_mine", animation_speed_mod)
+					player_set_animation(player, "walk_mine", v)
 				else
-					player_set_animation(player, "walk", animation_speed_mod)
+					player_set_animation(player, "walk", v)
 				end
 			elseif controls.LMB then
 				player_set_animation(player, "mine")
 			else
-				player_set_animation(player, "stand", animation_speed_mod)
+				player_set_animation(player, "stand", model.animation_speed or 30)
 			end
 		end
 	end
