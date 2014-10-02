@@ -91,6 +91,9 @@ minetest.register_on_leaveplayer(function(player)
 	player_textures[name] = nil
 end)
 
+
+if not minetest.is_singleplayer() then
+
 -- Localize for better performance.
 local player_set_animation = player_api.set_animation
 local player_attached = player_api.player_attached
@@ -136,3 +139,5 @@ minetest.register_globalstep(function(dtime)
 		end
 	end
 end)
+
+end
