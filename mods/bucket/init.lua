@@ -169,7 +169,7 @@ minetest.register_craftitem("bucket:bucket_empty", {
 					minetest.find_node_near(pointed_thing.under, 1, liquiddef.source)
 			end
 			if not (source_neighbor and liquiddef.force_renew) then
-				minetest.add_node(pointed_thing.under, {name = "air"})
+				minetest.dig_node(pointed_thing.under)
 			end
 
 			return ItemStack(giving_back)
