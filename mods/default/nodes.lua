@@ -1622,6 +1622,7 @@ minetest.register_node("default:lava_source", {
 	damage_per_second = 4 * 2,
 	post_effect_color = {a = 191, r = 255, g = 64, b = 0},
 	groups = {lava = 3, liquid = 2, igniter = 1},
+	sounds = default.node_sound_lava_defaults(),
 })
 
 minetest.register_node("default:lava_flowing", {
@@ -1669,6 +1670,7 @@ minetest.register_node("default:lava_flowing", {
 	post_effect_color = {a = 191, r = 255, g = 64, b = 0},
 	groups = {lava = 3, liquid = 2, igniter = 1,
 		not_in_creative_inventory = 1},
+	sounds = default.node_sound_lava_defaults(),
 })
 
 --
