@@ -178,7 +178,7 @@ minetest.register_craftitem("bucket:bucket_empty", {
 			if source_neighbor and liquiddef.force_renew then
 				log_action(pos, pname, "picked up " .. liquiddef.source .. " (force renewed)")
 			else
-				minetest.add_node(pos, {name = "air"})
+				minetest.dig_node(pos)
 				log_action(pos, pname, "picked up " .. liquiddef.source)
 			end
 

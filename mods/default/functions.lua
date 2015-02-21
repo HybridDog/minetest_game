@@ -129,6 +129,12 @@ function default.node_sound_water_defaults(tbl)
 	tbl = tbl or {}
 	tbl.footstep = tbl.footstep or
 			{name = "default_water_footstep", gain = 0.2}
+	tbl.dug = tbl.dug or
+			{name="default_water_footstep", gain=0.4}
+	tbl.dig = tbl.dig or
+			{name="default_water_footstep", gain=0.4}
+	tbl.place = tbl.place or
+			{name="default_water_footstep", gain=0.4}
 	default.node_sound_defaults(tbl)
 	return tbl
 end
@@ -147,6 +153,19 @@ function default.node_sound_snow_defaults(tbl)
 	return tbl
 end
 
+function default.node_sound_lava_defaults(tbl)
+	tbl = tbl or {}
+	tbl.footstep = tbl.footstep or
+			{name="default_lava_footstep", gain=0.25}
+	tbl.dug = tbl.dug or
+			{name="default_lava_footstep", gain=0.4}
+	tbl.dig = tbl.dig or
+			{name="default_lava_footstep", gain=0.4}
+	tbl.place = tbl.place or
+			{name="default_lava_footstep", gain=0.4}
+	default.node_sound_defaults(tbl)
+	return tbl
+end
 
 --
 -- Lavacooling
