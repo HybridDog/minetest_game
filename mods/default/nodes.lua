@@ -1784,13 +1784,13 @@ minetest.register_node("default:chest_locked", {
 		end
 		return count
 	end,
-    allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+	allow_metadata_inventory_put = function(pos, _, _, stack, player)
 		if not default.can_interact_with_node(player, pos) then
 			return 0
 		end
 		return stack:get_count()
 	end,
-    allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+    allow_metadata_inventory_take = function(pos, _, _, stack, player)
 		if not default.can_interact_with_node(player, pos) then
 			return 0
 		end
@@ -1813,6 +1813,8 @@ minetest.register_node("default:chest_locked", {
 				"default:chest_locked",
 				get_locked_chest_formspec(pos)
 			)
+		else
+			minetest.sound_play("default_chest_locked", {pos = pos})
 		end
 		return itemstack
 	end,
