@@ -122,6 +122,7 @@ function default.chest.register_chest(name, d)
 		end
 		def.on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 			if not default.can_interact_with_node(clicker, pos) then
+				minetest.sound_play("default_chest_locked", {pos = pos})
 				return itemstack
 			end
 
