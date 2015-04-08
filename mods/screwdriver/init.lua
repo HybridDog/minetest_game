@@ -135,8 +135,25 @@ screwdriver.handler = function(itemstack, user, pointed_thing, mode, uses)
 	end
 
 	if should_rotate and new_param2 ~= node.param2 then
+		if not ndef.on_rotate
+		and ndef.on_destruct then
+			ndef.on_destruct(vector.new(pos))
+		end
+
+		local oldnode = ndef.after_destruct and table.copy(node)
+
 		node.param2 = new_param2
 		minetest.swap_node(pos, node)
+
+		if oldnode then
+			ndef.after_destruct(vector.new(pos), oldnode)
+		end
+
+		if not ndef.on_rotate
+		and ndef.on_construct then
+			ndef.on_construct(vector.new(pos))
+		end
+
 		minetest.check_for_falling(pos)
 	end
 
