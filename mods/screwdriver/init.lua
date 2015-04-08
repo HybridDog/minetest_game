@@ -34,10 +34,12 @@ screwdriver.handler = function(itemstack, user, pointed_thing, mode, uses)
 
 	local node = minetest.get_node(pos)
 	local ndef = minetest.registered_nodes[node.name]
-	-- verify node is facedir (expected to be rotatable)
-	if not ndef or ndef.paramtype2 ~= "facedir" then
+
+	if not ndef
+	or ndef.paramtype2 ~= "facedir" then
 		return
 	end
+
 	-- Compute param2
 	local rotationPart = node.param2 % 32 -- get first 4 bits
 	local preservePart = node.param2 - rotationPart
@@ -53,7 +55,7 @@ screwdriver.handler = function(itemstack, user, pointed_thing, mode, uses)
 	local should_rotate = true
 
 	-- Node provides a handler, so let the handler decide instead if the node can be rotated
-	if ndef and ndef.on_rotate then
+	if ndef.on_rotate then
 		-- Copy pos and node because callback can modify it
 		local result = ndef.on_rotate(vector.new(pos),
 				{name = node.name, param1 = node.param1, param2 = node.param2},
@@ -78,8 +80,24 @@ screwdriver.handler = function(itemstack, user, pointed_thing, mode, uses)
 	end
 
 	if should_rotate then
+		if not ndef.on_rotate
+		and ndef.on_destruct then
+			ndef.on_destruct(vector.new(pos))
+		end
+
+		local oldnode = ndef.after_destruct and table.copy(node)
+
 		node.param2 = new_param2
 		minetest.swap_node(pos, node)
+
+		if oldnode then
+			ndef.after_destruct(vector.new(pos), oldnode)
+		end
+
+		if not ndef.on_rotate
+		and ndef.on_construct then
+			ndef.on_construct(vector.new(pos))
+		end
 	end
 
 	if not minetest.setting_getbool("creative_mode") then
