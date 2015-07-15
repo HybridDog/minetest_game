@@ -7,12 +7,6 @@
 stairs = {}
 
 
--- Register aliases for new pine node names
-
-minetest.register_alias("stairs:stair_pinewood", "stairs:stair_pine_wood")
-minetest.register_alias("stairs:slab_pinewood", "stairs:slab_pine_wood")
-
-
 -- Get setting for replace ABM
 
 local replace = minetest.settings:get_bool("enable_stairs_replace_abm")
@@ -51,14 +45,170 @@ local function warn_if_exists(nodename)
 end
 
 
--- Register stair
--- Node will be called stairs:stair_<subname>
+-- link functions instead of redefining them every time
 
-function stairs.register_stair(subname, recipeitem, groups, images, description,
-		sounds, worldaligntex)
-	-- Set backface culling and world-aligned textures
+local function on_place_stair(itemstack, placer, pointed_thing)
+	if pointed_thing.type ~= "node" then
+		return itemstack
+	end
+
+	return rotate_and_place(itemstack, placer, pointed_thing)
+end
+
+local function on_place_slab(itemstack, placer, pointed_thing, slabname, recipeitem)
+	local under = minetest.get_node(pointed_thing.under)
+	local wield_item = itemstack:get_name()
+
+	if under and under.name:find(":slab_") then
+		-- place slab using under node orientation
+		local dir = minetest.dir_to_facedir(vector.subtract(
+			pointed_thing.above, pointed_thing.under), true)
+
+		local p2 = under.param2
+
+		local player_name = placer and placer:get_player_name() or ""
+		local creative = creative and creative.is_enabled_for(player_name)
+
+		-- Placing a slab on an upside down slab should make it right-side up.
+		if p2 >= 20 and dir == 8 then
+			p2 = p2 - 20
+		-- same for the opposite case: slab below normal slab
+		elseif p2 <= 3 and dir == 4 then
+			p2 = p2 + 20
+		end
+
+		-- else attempt to place node with proper param2
+		minetest.item_place_node(ItemStack(wield_item), placer, pointed_thing, p2)
+		if not creative.is_enabled_for(player_name) then
+			itemstack:take_item()
+		end
+		return itemstack
+	else
+		return rotate_and_place(itemstack, placer, pointed_thing)
+	end
+end
+
+local on_place_inner = on_place_stair
+
+local on_place_outer = on_place_stair
+
+
+-- used to remove backface culling
+
+local function get_tiles(tiles)
 	local stair_images = {}
-	for i, image in ipairs(images) do
+	for i = 1,#tiles do
+		local image = tiles[i]
+		if type(image) == "string" then
+			stair_images[i] = {
+				name = image,
+				backface_culling = true,
+			}
+		elseif image.backface_culling == nil then
+			stair_images[i] = table.copy(image)
+			stair_images[i].backface_culling = true
+		end
+	end
+	return stair_images
+end
+
+
+-- collision (and selection) boxes
+
+local stairbox = {
+	type = "fixed",
+	fixed = {
+		{-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+		{-0.5, 0, 0, 0.5, 0.5, 0.5},
+	},
+}
+
+local slabbox = {
+	type = "fixed",
+	fixed = {-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+}
+
+local innerbox = {
+	type = "fixed",
+	fixed = {
+		{-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+		{-0.5, 0, 0, 0.5, 0.5, 0.5},
+		{-0.5, 0, -0.5, 0, 0.5, 0},
+	},
+}
+
+local outerbox = {
+	type = "fixed",
+	fixed = {
+		{-0.5, -0.5, -0.5, 0.5, 0, 0.5},
+		{-0.5, 0, 0, 0, 0.5, 0.5},
+	},
+}
+
+
+-- contents of the node definition which gets copied
+
+local to_copy = {"use_texture_alpha", "post_effect_color",
+	"is_ground_content", "walkable", "pointable", "diggable", "climbable",
+	"buildable_to", "light_source", "damage_per_second", "sounds",
+	"sunlight_propagates"}
+
+-- Node will be called like origin, just with "stair_" after the ":"
+function stairs.register_stair(data, extradef, groups, images, description,
+		sounds, worldaligntex)
+	if groups then
+		-- support the previous function using a tail call
+		local ldata = {
+			fixed_name = "stairs:stair_" .. data,
+			origin = extradef,
+			worldaligntex = worldaligntex,
+		}
+		if replace then
+			ldata.upside_down = ldata.fixed_name .. "upside_down"
+		end
+		return stairs.register_stair(
+			ldata,
+			{
+				description = description,
+				tiles = images,
+				groups = groups,
+				sounds = sounds,
+			}
+		)
+	end
+
+	local origname = data.origin
+	local origdef = minetest.registered_nodes[origname]
+	if not origdef then
+		origdef = {}
+		minetest.log("error", "[stairs] "..dump(origname).." should exist before adding a stair for it.")
+	end
+
+	local def = {}
+	for _,i in pairs(to_copy) do
+		def[i] = rawget(origdef, i)
+	end
+
+	if origdef.description then
+		def.description = origdef.description.." Stair"
+	end
+
+	def.drawtype = "nodebox"
+	def.node_box = stairbox
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.on_place = on_place_stair
+
+	if extradef then
+		for i,v in pairs(extradef) do
+			def[i] = v
+		end
+	end
+
+	-- Set backface culling and world-aligned textures
+	local worldaligntex = data.worldaligntex
+	local stair_images = {}
+	for i, image in ipairs(origdef.tiles) do
 		if type(image) == "string" then
 			stair_images[i] = {
 				name = image,
@@ -77,87 +227,135 @@ function stairs.register_stair(subname, recipeitem, groups, images, description,
 			end
 		end
 	end
-	local new_groups = table.copy(groups)
-	new_groups.stair = 1
-	warn_if_exists("stairs:stair_" .. subname)
-	minetest.register_node(":stairs:stair_" .. subname, {
-		description = description,
-		drawtype = "nodebox",
-		tiles = stair_images,
-		paramtype = "light",
-		paramtype2 = "facedir",
-		is_ground_content = false,
-		groups = new_groups,
-		sounds = sounds,
-		node_box = {
-			type = "fixed",
-			fixed = {
-				{-0.5, -0.5, -0.5, 0.5, 0.0, 0.5},
-				{-0.5, 0.0, 0.0, 0.5, 0.5, 0.5},
-			},
-		},
-		on_place = function(itemstack, placer, pointed_thing)
-			if pointed_thing.type ~= "node" then
-				return itemstack
-			end
+	def.tiles = stair_images
 
-			return rotate_and_place(itemstack, placer, pointed_thing)
-		end,
-	})
+	if origdef.groups then
+		def.groups = def.groups or table.copy(origdef.groups)
+	elseif not def.groups then
+		def.groups = {}
+	end
+	def.groups.stair = 1
+
+	local name = data.fixed_name
+	if not name then
+		local modname, nodename = unpack(string.split(origname, ":"))
+		name = modname..":stair_"..nodename
+	end
+	minetest.register_node(":"..name, def)
 
 	-- for replace ABM
-	if replace then
-		minetest.register_node(":stairs:stair_" .. subname .. "upside_down", {
-			replace_name = "stairs:stair_" .. subname,
+	if data.upside_down then
+		minetest.register_node(":"..data.upside_down, {
+			replace_name = name,
 			groups = {slabs_replace = 1},
 		})
 	end
 
-	if recipeitem then
-		-- Recipe matches appearence in inventory
-		minetest.register_craft({
-			output = "stairs:stair_" .. subname .. " 8",
-			recipe = {
-				{"", "", recipeitem},
-				{"", recipeitem, recipeitem},
-				{recipeitem, recipeitem, recipeitem},
-			},
-		})
-
-		-- Use stairs to craft full blocks again (1:1)
-		minetest.register_craft({
-			output = recipeitem .. " 3",
-			recipe = {
-				{"stairs:stair_" .. subname, "stairs:stair_" .. subname},
-				{"stairs:stair_" .. subname, "stairs:stair_" .. subname},
-			},
-		})
-
-		-- Fuel
-		local baseburntime = minetest.get_craft_result({
-			method = "fuel",
-			width = 1,
-			items = {recipeitem}
-		}).time
-		if baseburntime > 0 then
-			minetest.register_craft({
-				type = "fuel",
-				recipe = "stairs:stair_" .. subname,
-				burntime = math.floor(baseburntime * 0.75),
-			})
-		end
+	if data.add_crafting == false then
+		return
 	end
+
+	local input = data.recipe or origname
+
+	-- Fuel
+	local baseburntime = minetest.get_craft_result({
+		method = "fuel",
+		width = 1,
+		items = {input}
+	}).time
+	if baseburntime > 0 then
+		minetest.register_craft({
+			type = "fuel",
+			recipe = name,
+			burntime = math.floor(baseburntime * 0.75),
+		})
+	end
+
+	minetest.register_craft({
+		output = name .. " 8",
+		recipe = {
+			{"", "", input},
+			{"", input, input},
+			{input, input, input},
+		},
+	})
+
+	-- Use stairs to craft full blocks again (1:1)
+	minetest.register_craft({
+		output = input .. " 3",
+		recipe = {
+			{name, name},
+			{name, name},
+		},
+	})
+
 end
 
-
--- Register slab
--- Node will be called stairs:slab_<subname>
-
-function stairs.register_slab(subname, recipeitem, groups, images, description,
+-- Node will be called like origin, just with "slab_" after the ":"
+function stairs.register_slab(data, extradef, groups, images, description,
 		sounds, worldaligntex)
+	if groups then
+		-- support the previous function using a tail call
+		local ldata = {
+			fixed_name = "stairs:slab_" .. data,
+			origin = extradef,
+			worldaligntex = worldaligntex,
+		}
+		if replace then
+			ldata.upside_down = ldata.fixed_name .. "upside_down"
+		end
+		return stairs.register_slab(
+			ldata,
+			{
+				description = description,
+				tiles = images,
+				groups = groups,
+				sounds = sounds,
+			}
+		)
+	end
+
+	local origname = data.origin
+	local origdef = minetest.registered_nodes[origname]
+	if not origdef then
+		origdef = {}
+		minetest.log("error", "[stairs] "..origname.." should exist before adding a slab for it.")
+	end
+
+	local def = {}
+	for _,i in pairs(to_copy) do
+		def[i] = rawget(origdef, i)
+	end
+
+	if origdef.description then
+		def.description = origdef.description.." Slab"
+	end
+
+	def.drawtype = "nodebox"
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.node_box = slabbox
+
+	local name = data.fixed_name
+	if not name then
+		local modname, nodename = unpack(string.split(origname, ":"))
+		name = modname..":slab_"..nodename
+	end
+
+	def.on_place = function(itemstack, placer, pointed_thing)
+		return on_place_slab(itemstack, placer, pointed_thing, name, origname)
+	end
+
+	if extradef then
+		for i,v in pairs(extradef) do
+			def[i] = v
+		end
+	end
+
 	-- Set world-aligned textures
+	local worldaligntex = data.worldaligntex
 	local slab_images = {}
-	for i, image in ipairs(images) do
+	for i, image in ipairs(origdef.tiles) do
 		if type(image) == "string" then
 			slab_images[i] = {
 				name = image,
@@ -172,129 +370,113 @@ function stairs.register_slab(subname, recipeitem, groups, images, description,
 			end
 		end
 	end
-	local new_groups = table.copy(groups)
-	new_groups.slab = 1
-	warn_if_exists("stairs:slab_" .. subname)
-	minetest.register_node(":stairs:slab_" .. subname, {
-		description = description,
-		drawtype = "nodebox",
-		tiles = slab_images,
-		paramtype = "light",
-		paramtype2 = "facedir",
-		is_ground_content = false,
-		groups = new_groups,
-		sounds = sounds,
-		node_box = {
-			type = "fixed",
-			fixed = {-0.5, -0.5, -0.5, 0.5, 0, 0.5},
-		},
-		on_place = function(itemstack, placer, pointed_thing)
-			local under = minetest.get_node(pointed_thing.under)
-			local wield_item = itemstack:get_name()
-			local player_name = placer and placer:get_player_name() or ""
-			local creative_enabled = (creative and creative.is_enabled_for
-					and creative.is_enabled_for(player_name))
+	def.tiles = slab_images
 
-			if under and under.name:find("^stairs:slab_") then
-				-- place slab using under node orientation
-				local dir = minetest.dir_to_facedir(vector.subtract(
-					pointed_thing.above, pointed_thing.under), true)
+	if origdef.groups then
+		def.groups = def.groups or table.copy(origdef.groups)
+	elseif not def.groups then
+		def.groups = {}
+	end
+	def.groups.slab = 1
 
-				local p2 = under.param2
-
-				-- Placing a slab on an upside down slab should make it right-side up.
-				if p2 >= 20 and dir == 8 then
-					p2 = p2 - 20
-				-- same for the opposite case: slab below normal slab
-				elseif p2 <= 3 and dir == 4 then
-					p2 = p2 + 20
-				end
-
-				-- else attempt to place node with proper param2
-				minetest.item_place_node(ItemStack(wield_item), placer, pointed_thing, p2)
-				if not creative_enabled then
-					itemstack:take_item()
-				end
-				return itemstack
-			else
-				return rotate_and_place(itemstack, placer, pointed_thing)
-			end
-		end,
-	})
+	minetest.register_node(":" .. name, def)
 
 	-- for replace ABM
-	if replace then
-		minetest.register_node(":stairs:slab_" .. subname .. "upside_down", {
-			replace_name = "stairs:slab_".. subname,
+	if data.upside_down then
+		minetest.register_node(":"..data.upside_down, {
+			replace_name = name,
 			groups = {slabs_replace = 1},
 		})
 	end
 
-	if recipeitem then
-		minetest.register_craft({
-			output = "stairs:slab_" .. subname .. " 6",
-			recipe = {
-				{recipeitem, recipeitem, recipeitem},
-			},
-		})
-
-		-- Use 2 slabs to craft a full block again (1:1)
-		minetest.register_craft({
-			output = recipeitem,
-			recipe = {
-				{"stairs:slab_" .. subname},
-				{"stairs:slab_" .. subname},
-			},
-		})
-
-		-- Fuel
-		local baseburntime = minetest.get_craft_result({
-			method = "fuel",
-			width = 1,
-			items = {recipeitem}
-		}).time
-		if baseburntime > 0 then
-			minetest.register_craft({
-				type = "fuel",
-				recipe = "stairs:slab_" .. subname,
-				burntime = math.floor(baseburntime * 0.5),
-			})
-		end
+	if data.add_crafting == false then
+		return
 	end
-end
 
+	local input = data.recipe or origname
 
--- Optionally replace old "upside_down" nodes with new param2 versions.
--- Disabled by default.
+	-- Fuel
+	local baseburntime = minetest.get_craft_result({
+		method = "fuel",
+		width = 1,
+		items = {input}
+	}).time
+	if baseburntime > 0 then
+		minetest.register_craft({
+			type = "fuel",
+			recipe = name,
+			burntime = math.floor(baseburntime * 0.5),
+		})
+	end
 
-if replace then
-	minetest.register_abm({
-		label = "Slab replace",
-		nodenames = {"group:slabs_replace"},
-		interval = 16,
-		chance = 1,
-		action = function(pos, node)
-			node.name = minetest.registered_nodes[node.name].replace_name
-			node.param2 = node.param2 + 20
-			if node.param2 == 21 then
-				node.param2 = 23
-			elseif node.param2 == 23 then
-				node.param2 = 21
-			end
-			minetest.set_node(pos, node)
-		end,
+	minetest.register_craft({
+		output = name .. " 6",
+		recipe = {
+			{input, input, input},
+		},
+	})
+
+	-- Use 2 slabs to craft a full block again (1:1)
+	minetest.register_craft({
+		output = input,
+		recipe = {
+			{name},
+			{name},
+		},
 	})
 end
 
+-- Node will be called <modname>:stair_inner_<nodename>
+function stairs.register_stair_inner(data, extradef,
+		groups, images, description, sounds, worldaligntex)
+	if groups then
+		-- support the previous function of minetest_game
+		local ldata = {
+			fixed_name = "stairs:stair_inner_" .. data,
+			origin = extradef,
+			worldaligntex = worldaligntex,
+		}
+		return stairs.register_stair_inner(
+			ldata,
+			{
+				description = description .. " Inner",
+				tiles = images,
+				groups = groups,
+				sounds = sounds,
+			}
+		)
+	end
 
--- Register inner stair
--- Node will be called stairs:stair_inner_<subname>
+	local origname = data.origin
+	local origdef = minetest.registered_nodes[origname]
+	if not origdef then
+		origdef = {}
+		minetest.log("error", "[stairs] "..dump(origname).." should exist before adding an (inner) stair for it.")
+	end
 
-function stairs.register_stair_inner(subname, recipeitem, groups, images,
-		description, sounds, worldaligntex)
-	-- Set backface culling and world-aligned textures
+	local def = {}
+	for _,i in pairs(to_copy) do
+		def[i] = rawget(origdef, i)
+	end
+
+	if origdef.description then
+		def.description = origdef.description.." Stair Inner"
+	end
+
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.node_box = innerbox
+	def.on_place = on_place_inner
+
+	if extradef then
+		for i,v in pairs(extradef) do
+			def[i] = v
+		end
+	end
+
+	local worldaligntex = data.worldaligntex
 	local stair_images = {}
-	for i, image in ipairs(images) do
+	for i, image in ipairs(origdef.tiles) do
 		if type(image) == "string" then
 			stair_images[i] = {
 				name = image,
@@ -313,70 +495,103 @@ function stairs.register_stair_inner(subname, recipeitem, groups, images,
 			end
 		end
 	end
-	local new_groups = table.copy(groups)
-	new_groups.stair = 1
-	warn_if_exists("stairs:stair_inner_" .. subname)
-	minetest.register_node(":stairs:stair_inner_" .. subname, {
-		description = "Inner " .. description,
-		drawtype = "nodebox",
-		tiles = stair_images,
-		paramtype = "light",
-		paramtype2 = "facedir",
-		is_ground_content = false,
-		groups = new_groups,
-		sounds = sounds,
-		node_box = {
-			type = "fixed",
-			fixed = {
-				{-0.5, -0.5, -0.5, 0.5, 0.0, 0.5},
-				{-0.5, 0.0, 0.0, 0.5, 0.5, 0.5},
-				{-0.5, 0.0, -0.5, 0.0, 0.5, 0.0},
-			},
-		},
-		on_place = function(itemstack, placer, pointed_thing)
-			if pointed_thing.type ~= "node" then
-				return itemstack
-			end
+	def.tiles = stair_images
 
-			return rotate_and_place(itemstack, placer, pointed_thing)
-		end,
-	})
-
-	if recipeitem then
-		minetest.register_craft({
-			output = "stairs:stair_inner_" .. subname .. " 7",
-			recipe = {
-				{"", recipeitem, ""},
-				{recipeitem, "", recipeitem},
-				{recipeitem, recipeitem, recipeitem},
-			},
-		})
-
-		-- Fuel
-		local baseburntime = minetest.get_craft_result({
-			method = "fuel",
-			width = 1,
-			items = {recipeitem}
-		}).time
-		if baseburntime > 0 then
-			minetest.register_craft({
-				type = "fuel",
-				recipe = "stairs:stair_inner_" .. subname,
-				burntime = math.floor(baseburntime * 0.875),
-			})
-		end
+	if origdef.groups then
+		def.groups = def.groups or table.copy(origdef.groups)
+	elseif not def.groups then
+		def.groups = {}
 	end
+	def.groups.stair = 1
+
+	local name = data.fixed_name
+	if not name then
+		local modname, nodename = unpack(origname:split":")
+		name = modname..":stair_inner_"..nodename
+	end
+	minetest.register_node(":"..name, def)
+
+	if data.add_crafting == false then
+		return
+	end
+
+	local input = data.recipe or origname
+
+	-- Fuel
+	local baseburntime = minetest.get_craft_result({
+		method = "fuel",
+		width = 1,
+		items = {input}
+	}).time
+	if baseburntime > 0 then
+		minetest.register_craft({
+			type = "fuel",
+			recipe = name,
+			burntime = math.floor(baseburntime * 0.875),
+		})
+	end
+
+	minetest.register_craft({
+		output = name .. " 7",
+		recipe = {
+			{"", input, ""},
+			{input, "", input},
+			{input, input, input},
+		},
+	})
 end
 
+-- Node will be called <modname>:stair_outer_<nodename>
+function stairs.register_stair_outer(data, extradef,
+		groups, images, description, sounds, worldaligntex)
+	if groups then
+		-- support the previous function of minetest_game
+		local ldata = {
+			fixed_name = "stairs:stair_outer_" .. data,
+			origin = extradef,
+			worldaligntex = worldaligntex,
+		}
+		return stairs.register_stair_outer(
+			ldata,
+			{
+				description = description .. " Outer",
+				tiles = images,
+				groups = groups,
+				sounds = sounds,
+			}
+		)
+	end
 
--- Register outer stair
--- Node will be called stairs:stair_outer_<subname>
+	local origname = data.origin
+	local origdef = minetest.registered_nodes[origname]
+	if not origdef then
+		origdef = {}
+		minetest.log("error", "[stairs] "..dump(origname).." should exist before adding an (outer) stair for it.")
+	end
 
-function stairs.register_stair_outer(subname, recipeitem, groups, images,
-		description, sounds, worldaligntex)
-	-- Set backface culling and world-aligned textures
+	local def = {}
+	for _,i in pairs(to_copy) do
+		def[i] = rawget(origdef, i)
+	end
+
+	if origdef.description then
+		def.description = origdef.description.." Stair Outer"
+	end
+
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.node_box = outerbox
+	def.on_place = on_place_outer
+
+	if extradef then
+		for i,v in pairs(extradef) do
+			def[i] = v
+		end
+	end
+
+	local worldaligntex = data.worldaligntex
 	local stair_images = {}
-	for i, image in ipairs(images) do
+	for i, image in ipairs(origdef.tiles) do
 		if type(image) == "string" then
 			stair_images[i] = {
 				name = image,
@@ -395,62 +610,56 @@ function stairs.register_stair_outer(subname, recipeitem, groups, images,
 			end
 		end
 	end
-	local new_groups = table.copy(groups)
-	new_groups.stair = 1
-	warn_if_exists("stairs:stair_outer_" .. subname)
-	minetest.register_node(":stairs:stair_outer_" .. subname, {
-		description = "Outer " .. description,
-		drawtype = "nodebox",
-		tiles = stair_images,
-		paramtype = "light",
-		paramtype2 = "facedir",
-		is_ground_content = false,
-		groups = new_groups,
-		sounds = sounds,
-		node_box = {
-			type = "fixed",
-			fixed = {
-				{-0.5, -0.5, -0.5, 0.5, 0.0, 0.5},
-				{-0.5, 0.0, 0.0, 0.0, 0.5, 0.5},
-			},
-		},
-		on_place = function(itemstack, placer, pointed_thing)
-			if pointed_thing.type ~= "node" then
-				return itemstack
-			end
+	def.tiles = stair_images
 
-			return rotate_and_place(itemstack, placer, pointed_thing)
-		end,
-	})
-
-	if recipeitem then
-		minetest.register_craft({
-			output = "stairs:stair_outer_" .. subname .. " 6",
-			recipe = {
-				{"", recipeitem, ""},
-				{recipeitem, recipeitem, recipeitem},
-			},
-		})
-
-		-- Fuel
-		local baseburntime = minetest.get_craft_result({
-			method = "fuel",
-			width = 1,
-			items = {recipeitem}
-		}).time
-		if baseburntime > 0 then
-			minetest.register_craft({
-				type = "fuel",
-				recipe = "stairs:stair_outer_" .. subname,
-				burntime = math.floor(baseburntime * 0.625),
-			})
-		end
+	if origdef.groups then
+		def.groups = def.groups or table.copy(origdef.groups)
+	elseif not def.groups then
+		def.groups = {}
 	end
+	def.groups.stair = 1
+
+	local name = data.fixed_name
+	if not name then
+		local modname, nodename = unpack(origname:split":")
+		name = modname..":stair_outer_"..nodename
+	end
+	minetest.register_node(":"..name, def)
+
+	if data.add_crafting == false then
+		return
+	end
+
+	local input = data.recipe or origname
+
+	-- Fuel
+	local baseburntime = minetest.get_craft_result({
+		method = "fuel",
+		width = 1,
+		items = {input}
+	}).time
+	if baseburntime > 0 then
+		minetest.register_craft({
+			type = "fuel",
+			recipe = name,
+			burntime = math.floor(baseburntime * 0.625),
+		})
+	end
+
+	minetest.register_craft({
+		output = name .. " 6",
+		recipe = {
+			{"", "", ""},
+			{"", input, ""},
+			{input, input, input},
+		},
+	})
 end
 
 
 -- Stair/slab registration function.
--- Nodes will be called stairs:{stair,slab}_<subname>
+-- If groups etc. given (deprecated), nodes will be called
+-- stairs:{stair,slab,stair_inner,stair_outer}_<subname>
 
 function stairs.register_stair_and_slab(subname, recipeitem, groups, images,
 		desc_stair, desc_slab, sounds, worldaligntex)
@@ -466,6 +675,7 @@ end
 
 
 -- Register default stairs and slabs
+-- TODO: put this into default and use the new way of adding stairs and slabs
 
 stairs.register_stair_and_slab(
 	"wood",
@@ -934,3 +1144,36 @@ stairs.register_stair_outer(
 	default.node_sound_glass_defaults(),
 	false
 )
+
+
+
+-- legacy
+
+
+-- Register aliases for new pine node names
+
+minetest.register_alias("stairs:stair_pinewood", "stairs:stair_pine_wood")
+minetest.register_alias("stairs:slab_pinewood", "stairs:slab_pine_wood")
+
+
+-- Optionally replace old "upside_down" nodes with new param2 versions.
+-- Disabled by default.
+
+if replace then
+	minetest.register_abm({
+		label = "Slab replace",
+		nodenames = {"group:slabs_replace"},
+		interval = 16,
+		chance = 1,
+		action = function(pos, node)
+			node.name = minetest.registered_nodes[node.name].replace_name
+			node.param2 = node.param2 + 20
+			if node.param2 == 21 then
+				node.param2 = 23
+			elseif node.param2 == 23 then
+				node.param2 = 21
+			end
+			minetest.set_node(pos, node)
+		end,
+	})
+end

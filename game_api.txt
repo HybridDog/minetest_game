@@ -708,56 +708,22 @@ Stairs API
 The stairs API lets you register stairs and slabs and ensures that they are registered the same way as those
 delivered with Minetest Game, to keep them compatible with other mods.
 
-`stairs.register_stair(subname, recipeitem, groups, images, description, sounds, worldaligntex)`
+stairs.register_stair({origin = string[, fixed_name = string, recipe = string, add_crafting = bool, worldaligntex = bool}, extradef])
+ -> Registers a stair.
+ -> origin is the node the stair consists of, selected parts of the node definition of origin are copied and used for the stair, TODO: find out why it copies weird stuff although dumping the def of the original node (superpick mod) doesn't show them and try to avoid it
+ -> fixed_name can be used to avoid giving the stair a name automatically, do not use it for register_stair_and_slab
+ -> recipe is the craft recipe, if omitted origin is used
+ -> add_crafting can be set to false to disable adding a craft recipe for the stair
+ -> `worldaligntex`: A bool to set all textures world-aligned. Default false. See [Tile definition]
+ -> extradef is a custom node definition table, it can be used e.g. to give the slab a specific drop
 
- * Registers a stair
- * `subname`: Basically the material name (e.g. cobble) used for the stair name. Nodename pattern: "stairs:stair_subname"
- * `recipeitem`: Item used in the craft recipe, e.g. "default:cobble", may be `nil`
- * `groups`: See [Known damage and digging time defining groups]
- * `images`: See [Tile definition]
- * `description`: Used for the description field in the stair's definition
- * `sounds`: See [#Default sounds]
- * `worldaligntex`: A bool to set all textures world-aligned. Default false. See [Tile definition]
+stairs.register_slab is like register_stair but adds a slab
+stairs.register_stair_inner and stairs.register_stair_outer are for corner nodes
+stairs.register_stair_and_slab calls register_stair and register_slab
 
-`stairs.register_slab(subname, recipeitem, groups, images, description, sounds, worldaligntex)`
-
- * Registers a slab
- * `subname`: Basically the material name (e.g. cobble) used for the slab name. Nodename pattern: "stairs:slab_subname"
- * `recipeitem`: Item used in the craft recipe, e.g. "default:cobble"
- * `groups`: See [Known damage and digging time defining groups]
- * `images`: See [Tile definition]
- * `description`: Used for the description field in the slab's definition
- * `sounds`: See [#Default sounds]
- * `worldaligntex`: A bool to set all textures world-aligned. Default false. See [Tile definition]
-
-`stairs.register_stair_inner(subname, recipeitem, groups, images, description, sounds, worldaligntex)`
-
- * Registers an inner corner stair
- * `subname`: Basically the material name (e.g. cobble) used for the stair name. Nodename pattern: "stairs:stair_inner_subname"
- * `recipeitem`: Item used in the craft recipe, e.g. "default:cobble", may be `nil`
- * `groups`: See [Known damage and digging time defining groups]
- * `images`: See [Tile definition]
- * `description`: Used for the description field in the stair's definition
- * `sounds`: See [#Default sounds]
- * `worldaligntex`: A bool to set all textures world-aligned. Default false. See [Tile definition]
-
-`stairs.register_stair_outer(subname, recipeitem, groups, images, description, sounds, worldaligntex)`
-
- * Registers an outer corner stair
- * `subname`: Basically the material name (e.g. cobble) used for the stair name. Nodename pattern: "stairs:stair_outer_subname"
- * `recipeitem`: Item used in the craft recipe, e.g. "default:cobble", may be `nil`
- * `groups`: See [Known damage and digging time defining groups]
- * `images`: See [Tile definition]
- * `description`: Used for the description field in the stair's definition
- * `sounds`: See [#Default sounds]
- * `worldaligntex`: A bool to set all textures world-aligned. Default false. See [Tile definition]
-
-`stairs.register_stair_and_slab(subname, recipeitem, groups, images, desc_stair, desc_slab, sounds, worldaligntex)`
-
- * A wrapper for stairs.register_stair, stairs.register_slab, stairs.register_stair_inner, stairs.register_stair_outer
- * Uses almost the same arguments as stairs.register_stair
- * `desc_stair`: Description for stair nodes. For corner stairs 'Inner' or 'Outer' will be prefixed
- * `desc_slab`: Description for slab node
+For example, following code adds a stone slab and stair:
+stairs.register_stair_and_slab({origin = "default:stone"})
+The stair is named "default:stair_stone" and contains groups, sounds, etc. from "default:stone".
 
 
 Xpanes API
