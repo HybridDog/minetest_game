@@ -493,8 +493,8 @@ function default.register_ores()
 		clust_scarcity = 10*10*10,
 		clust_num_ores = 2,
 		clust_size     = 3,
-		height_min     = -63,
-		height_max     = -16,
+		y_min     = -63,
+		y_max     = -16,
 	})
 
 	minetest.register_ore({
@@ -504,8 +504,8 @@ function default.register_ores()
 		clust_scarcity = 7*7*7,
 		clust_num_ores = 3,
 		clust_size     = 3,
-		height_min     = -31000,
-		height_max     = -64,
+		y_min     = -31000,
+		y_max     = -64,
 		flags          = "absheight",
 	})
 end
