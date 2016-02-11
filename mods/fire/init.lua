@@ -9,7 +9,8 @@ fire = {}
 
 -- Flame nodes
 
-minetest.register_node("fire:basic_flame", {
+local flamedef = {
+	description = "Permanent Flame",
 	drawtype = "firelike",
 	tiles = {
 		{
@@ -44,32 +45,18 @@ minetest.register_node("fire:basic_flame", {
 	on_construct = function(pos)
 		minetest.get_node_timer(pos):start(math.random(30, 60))
 	end,
-})
+}
+minetest.register_node("fire:permanent_flame", table.copy(flamedef))
 
-minetest.register_node("fire:permanent_flame", {
-	description = "Permanent Flame",
-	drawtype = "firelike",
-	tiles = {
-		{
-			name = "fire_basic_flame_animated.png",
-			animation = {
-				type = "vertical_frames",
-				aspect_w = 16,
-				aspect_h = 16,
-				length = 1
-			},
-		},
-	},
-	inventory_image = "fire_basic_flame.png",
-	paramtype = "light",
-	light_source = 13,
-	walkable = false,
-	buildable_to = true,
-	sunlight_propagates = true,
-	damage_per_second = 4,
-	groups = {igniter = 2, dig_immediate = 3},
-	drop = "",
-})
+flamedef.description = "Basic Flame"
+flamedef.on_construct = function(pos)
+	minetest.after(0, fire.on_flame_add_at, pos)
+end
+flamedef.on_destruct = function(pos)
+	minetest.after(0, fire.on_flame_remove_at, pos)
+end
+
+minetest.register_node("fire:basic_flame", flamedef)
 
 
 -- Flint and steel
@@ -147,7 +134,7 @@ minetest.override_item("default:coalblock", {
 -- Sound
 --
 
-local flame_sound = minetest.setting_getbool("flame_sound")
+local flame_sound = minetest.setting_getbool"flame_sound"
 if flame_sound == nil then
 	-- Enable if no setting present
 	flame_sound = true
@@ -279,7 +266,7 @@ minetest.register_abm({
 	interval = 3,
 	chance = 1,
 	catch_up = false,
-	action = function(pos, node, active_object_count, active_object_count_wider)
+	action = function(pos)
 		minetest.remove_node(pos)
 		minetest.sound_play("fire_extinguish_flame",
 			{pos = pos, max_hear_distance = 16, gain = 0.15})
@@ -320,7 +307,7 @@ else -- Fire enabled
 		interval = 7,
 		chance = 12,
 		catch_up = false,
-		action = function(pos, node, active_object_count, active_object_count_wider)
+		action = function(pos)
 			-- If there is water or stuff like that around node, don't ignite
 			if minetest.find_node_near(pos, 1, {"group:puts_out_fire"}) then
 				return
@@ -343,15 +330,16 @@ else -- Fire enabled
 		catch_up = false,
 		action = function(pos, node, active_object_count, active_object_count_wider)
 			local p = minetest.find_node_near(pos, 1, {"group:flammable"})
-			if p then
-				local flammable_node = minetest.get_node(p)
-				local def = minetest.registered_nodes[flammable_node.name]
-				if def.on_burn then
-					def.on_burn(p)
-				else
-					minetest.remove_node(p)
-					minetest.check_for_falling(p)
-				end
+			if not p then
+				return
+			end
+			local flammable_node = minetest.get_node(p)
+			local def = minetest.registered_nodes[flammable_node.name]
+			if def.on_burn then
+				def.on_burn(p)
+			else
+				minetest.remove_node(p)
+				minetest.check_for_falling(p)
 			end
 		end,
 	})
