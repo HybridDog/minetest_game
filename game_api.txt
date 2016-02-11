@@ -236,14 +236,23 @@ The farming API allows you to easily register plants and hoes.
 Fire API
 --------
 
+Add group flammable when registering a node to make fire seek for it.
+
 New node def property:
 
-`on_burn(pos)`
+`on_burn(pos, node)`
 
- * Called when fire attempts to remove a burning node.
- * `pos` Position of the burning node.
+ * Called when fire attempts to burn the node `node` at `pos`.
+ * If the function explicitly returns false, the node is removed after calling
+   this function.
 
- `on_ignite(pos, igniter)`
+`on_burn = nodename`
+
+ * If you set on_burn to a string, the node is replaced with a node named
+	`nodename`, param1 and param2 are kept.
+ * If on_burn is nil, the node is simply removed.
+
+`on_ignite(pos, igniter)`
 
   * Called when Flint and steel (or a mod defined ignitor) is used on a node.
     Defining it may prevent the default action (spawning flames) from triggering.
@@ -364,10 +373,6 @@ Both nodedefs and entitydefs can provide an `on_blast()` callback
 * `do_knockback` - if true then TNT mod will knock the entity away
 * `drops` - a list of drops, e.g. {"wool:red"}
 
-
-Fire API
-----------
-Add group flammable when registering a node to make fire seek for it.
 
 Screwdriver API
 ---------------

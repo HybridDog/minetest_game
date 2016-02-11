@@ -344,14 +344,21 @@ else -- Fire enabled
 			if not p then
 				return
 			end
-			local flammable_node = minetest.get_node(p)
-			local def = minetest.registered_nodes[flammable_node.name]
-			if def.on_burn then
-				def.on_burn(p)
-			else
-				minetest.remove_node(p)
-				minetest.check_for_falling(p)
+			local node = minetest.get_node(p)
+			local on_burn = minetest.registered_nodes[node.name].on_burn
+			if on_burn then
+				if type(on_burn) == "string" then
+					node.name = on_burn
+					minetest.set_node(p, node)
+					minetest.check_for_falling(p)
+					return
+				end
+				if on_burn(p, node) ~= false then
+					return
+				end
 			end
+			minetest.remove_node(p)
+			minetest.check_for_falling(p)
 		end,
 	})
 
