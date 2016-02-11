@@ -9,44 +9,7 @@ fire = {}
 
 -- Flame nodes
 
-minetest.register_node("fire:basic_flame", {
-	drawtype = "firelike",
-	tiles = {
-		{
-			name = "fire_basic_flame_animated.png",
-			animation = {
-				type = "vertical_frames",
-				aspect_w = 16,
-				aspect_h = 16,
-				length = 1
-			},
-		},
-	},
-	inventory_image = "fire_basic_flame.png",
-	paramtype = "light",
-	light_source = 13,
-	walkable = false,
-	buildable_to = true,
-	sunlight_propagates = true,
-	damage_per_second = 4,
-	groups = {igniter = 2, dig_immediate = 3, not_in_creative_inventory = 1},
-	on_timer = function(pos)
-		local f = minetest.find_node_near(pos, 1, {"group:flammable"})
-		if not f then
-			minetest.remove_node(pos)
-			return
-		end
-		-- Restart timer
-		return true
-	end,
-	drop = "",
-
-	on_construct = function(pos)
-		minetest.get_node_timer(pos):start(math.random(30, 60))
-	end,
-})
-
-minetest.register_node("fire:permanent_flame", {
+local flamedef = {
 	description = "Permanent Flame",
 	drawtype = "firelike",
 	tiles = {
@@ -67,9 +30,44 @@ minetest.register_node("fire:permanent_flame", {
 	buildable_to = true,
 	sunlight_propagates = true,
 	damage_per_second = 4,
+	on_timer = function(pos)
+		local f = minetest.find_node_near(pos, 1, {"group:flammable"})
+		if not f then
+			minetest.remove_node(pos)
+			return
+		end
+		-- Restart timer
+		return true
+	end,
+
+	on_construct = function(pos)
+		minetest.get_node_timer(pos):start(math.random(30, 60))
+	end,
 	groups = {igniter = 2, dig_immediate = 3},
+
 	drop = "",
-})
+}
+minetest.register_node("fire:permanent_flame", table.copy(flamedef))
+
+flamedef.description = "Basic Flame"
+flamedef.groups.not_in_creative_inventory = nil
+flamedef.on_timer = function(pos)
+	local f = minetest.find_node_near(pos, 1, {"group:flammable"})
+	if f then
+		-- restart timer
+		return true
+	end
+	minetest.remove_node(pos)
+end
+flamedef.on_construct = function(pos)
+	minetest.get_node_timer(pos):start(math.random(30, 60))
+	minetest.after(0, fire.update_sounds_around, pos)
+end
+flamedef.on_destruct = function(pos)
+	minetest.after(0, fire.update_sounds_around, pos)
+end
+
+minetest.register_node("fire:basic_flame", flamedef)
 
 
 -- Flint and steel
@@ -128,7 +126,7 @@ minetest.register_craft({
 -- Coalblock is non-flammable to avoid unwanted basic_flame nodes
 
 minetest.override_item("default:coalblock", {
-	after_destruct = function(pos, oldnode)
+	after_destruct = function(pos)
 		pos.y = pos.y + 1
 		if minetest.get_node(pos).name == "fire:permanent_flame" then
 			minetest.remove_node(pos)
@@ -279,7 +277,7 @@ minetest.register_abm({
 	interval = 3,
 	chance = 1,
 	catch_up = false,
-	action = function(pos, node, active_object_count, active_object_count_wider)
+	action = function(pos)
 		minetest.remove_node(pos)
 		minetest.sound_play("fire_extinguish_flame",
 			{pos = pos, max_hear_distance = 16, gain = 0.15})
@@ -320,7 +318,7 @@ else -- Fire enabled
 		interval = 7,
 		chance = 12,
 		catch_up = false,
-		action = function(pos, node, active_object_count, active_object_count_wider)
+		action = function(pos)
 			-- If there is water or stuff like that around node, don't ignite
 			if minetest.find_node_near(pos, 1, {"group:puts_out_fire"}) then
 				return
@@ -341,17 +339,18 @@ else -- Fire enabled
 		interval = 5,
 		chance = 18,
 		catch_up = false,
-		action = function(pos, node, active_object_count, active_object_count_wider)
+		action = function(pos)
 			local p = minetest.find_node_near(pos, 1, {"group:flammable"})
-			if p then
-				local flammable_node = minetest.get_node(p)
-				local def = minetest.registered_nodes[flammable_node.name]
-				if def.on_burn then
-					def.on_burn(p)
-				else
-					minetest.remove_node(p)
-					minetest.check_for_falling(p)
-				end
+			if not p then
+				return
+			end
+			local flammable_node = minetest.get_node(p)
+			local def = minetest.registered_nodes[flammable_node.name]
+			if def.on_burn then
+				def.on_burn(p)
+			else
+				minetest.remove_node(p)
+				minetest.check_for_falling(p)
 			end
 		end,
 	})

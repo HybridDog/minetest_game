@@ -365,6 +365,10 @@ Both nodedefs and entitydefs can provide an `on_blast()` callback
 * `drops` - a list of drops, e.g. {"wool:red"}
 
 
+Fire API
+----------
+Add group flammable when registering a node to make fire seek for it.
+
 Screwdriver API
 ---------------
 
