@@ -39,7 +39,7 @@ Beds API
  * `beds.read_spawns() `   Returns a table containing players respawn positions
  * `beds.kick_players()`  Forces all players to leave bed
  * `beds.skip_night()`   Sets world time to morning and saves respawn position of all players currently sleeping
- 
+
 ###Bed definition
 
 	{
@@ -85,12 +85,12 @@ The doors mod allows modders to register custom doors and trapdoors.
  * `def`  See [#Fence gate definition]
 
 `doors.get(pos)`
- 
+
  * `pos` A position as a table, e.g `{x = 1, y = 1, z = 1}`
  * Returns an ObjecRef to a door, or nil if the position does not contain a door
- 
+
  ###Methods
- 
+
         :open(player)   -- Open the door object, returns if door was opened
         :close(player)  -- Close the door object, returns if door was closed
         :toggle(player) -- Toggle the door state, returns if state was toggled
@@ -180,21 +180,17 @@ The farming API allows you to easily register plants and hoes.
 
 	{
 		description = "",                      -- Description for tooltip
-		inventory_image = "unknown_item.png",  -- Image to be used as wield- and inventory image
+		inventory_image = ,                    -- Image to be used as wield- and inventory image
 		max_uses = 30,                         -- Uses until destroyed
 		material = "",                         -- Material for recipes
-		recipe = {                             -- Craft recipe, if material isn't used
-			{"air", "air", "air"},
-			{"", "group:stick"},
-			{"", "group:stick"},
-		}
+		recipe = ,                             -- Craft recipe, if material isn't used
 	}
 
 ###Plant definition
 
 	{
 		description = "",                      -- Description of seed item
-		inventory_image = "unknown_item.png",  -- Image to be used as seed's wield- and inventory image
+		inventory_image = ,                    -- Image to be used as seed's wield- and inventory image
 		steps = 8,                             -- How many steps the plant has to grow, until it can be harvested
 		-- ^ Always provide a plant texture for each step, format: modname_plantname_i.png (i = stepnumber)
 		minlight = 13,                         -- Minimum light to grow
@@ -497,7 +493,7 @@ Trees
  * `default.grow_jungle_tree(pos)`
   * Grows a mgv6 jungletree at pos
 
- * `default.grow_pine_tree(pos)` 
+ * `default.grow_pine_tree(pos)`
   * Grows a mgv6 pinetree at pos
 
  * `default.grow_new_apple_tree(pos)`
