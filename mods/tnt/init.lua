@@ -108,6 +108,7 @@ end
 
 local function calc_velocity(pos1, pos2, old_vel, power)
 	-- Avoid errors caused by a vector of zero length
+	-- if the distance is 0, no knockback should happen
 	if vector.equals(pos1, pos2) then
 		return old_vel
 	end
