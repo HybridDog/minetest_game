@@ -233,8 +233,8 @@ if minetest.settings:get_bool("enable_lavacooling") ~= false then
 		label = "Lava cooling",
 		nodenames = {"default:lava_source", "default:lava_flowing"},
 		neighbors = {"group:cools_lava", "group:water"},
-		interval = 2,
-		chance = 2,
+		interval = 1,
+		chance = 1,
 		catch_up = false,
 		action = function(...)
 			default.cool_lava(...)
@@ -345,7 +345,9 @@ minetest.register_abm({
 --
 
 function default.dig_up(pos, node, digger)
-	if digger == nil then return end
+	if not digger then
+		return
+	end
 	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
 	local nn = minetest.get_node(np)
 	if nn.name == node.name then
@@ -482,8 +484,10 @@ end
 
 -- Prevent decay of placed leaves
 
-default.after_place_leaves = function(pos, placer, itemstack, pointed_thing)
-	if placer and placer:is_player() and not placer:get_player_control().sneak then
+function default.after_place_leaves(pos, placer)
+	if placer
+	and placer:is_player()
+	and not placer:get_player_control().sneak then
 		local node = minetest.get_node(pos)
 		node.param2 = 1
 		minetest.set_node(pos, node)
@@ -621,7 +625,7 @@ minetest.register_abm({
 })
 
 
---
+--[[
 -- Moss growth on cobble near water
 --
 
@@ -648,7 +652,7 @@ minetest.register_abm({
 			minetest.set_node(pos, node)
 		end
 	end
-})
+})--]]
 
 
 --
