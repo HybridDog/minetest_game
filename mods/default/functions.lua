@@ -247,8 +247,8 @@ if minetest.settings:get_bool("enable_lavacooling") ~= false then
 		label = "Lava cooling",
 		nodenames = {"default:lava_source", "default:lava_flowing"},
 		neighbors = {"group:cools_lava", "group:water"},
-		interval = 2,
-		chance = 2,
+		interval = 1,
+		chance = 1,
 		catch_up = false,
 		action = function(...)
 			default.cool_lava(...)
@@ -374,7 +374,9 @@ minetest.register_abm({
 --
 
 function default.dig_up(pos, node, digger)
-	if digger == nil then return end
+	if not digger then
+		return
+	end
 	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
 	local nn = minetest.get_node(np)
 	if nn.name == node.name then
@@ -732,7 +734,7 @@ minetest.register_abm({
 })
 
 
---
+--[[
 -- Moss growth on cobble near water
 --
 
@@ -759,7 +761,7 @@ minetest.register_abm({
 			minetest.set_node(pos, node)
 		end
 	end
-})
+})--]]
 
 --
 -- Register a craft to copy the metadata of items
