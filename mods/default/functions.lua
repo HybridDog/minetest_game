@@ -221,8 +221,7 @@ minetest.register_abm({
 	nodenames = {"default:lava_source", "default:lava_flowing"},
 	neighbors = {"group:cools_lava", "group:water"},
 	interval = 1,
-	chance = 2,
-	catch_up = false,
+	chance = 1,
 	action = function(...)
 		default.cool_lava(...)
 	end,
@@ -330,7 +329,9 @@ minetest.register_abm({
 --
 
 function default.dig_up(pos, node, digger)
-	if digger == nil then return end
+	if not digger then
+		return
+	end
 	local np = {x = pos.x, y = pos.y + 1, z = pos.z}
 	local nn = minetest.get_node(np)
 	if nn.name == node.name then
@@ -402,8 +403,9 @@ end
 
 -- Prevent decay of placed leaves
 
-default.after_place_leaves = function(pos, placer, itemstack, pointed_thing)
-	if placer and not placer:get_player_control().sneak then
+function default.after_place_leaves(pos, placer)
+	if placer
+	and not placer:get_player_control().sneak then
 		local node = minetest.get_node(pos)
 		node.param2 = 1
 		minetest.set_node(pos, node)
@@ -527,19 +529,26 @@ minetest.register_abm({
 	chance = 50,
 	catch_up = false,
 	action = function(pos, node)
-		local above = {x = pos.x, y = pos.y + 1, z = pos.z}
-		local name = minetest.get_node(above).name
+		pos.y = pos.y+1
+		local name = minetest.get_node(pos).name
 		local nodedef = minetest.registered_nodes[name]
-		if name ~= "ignore" and nodedef and not ((nodedef.sunlight_propagates or
-				nodedef.paramtype == "light") and
-				nodedef.liquidtype == "none") then
+		if name ~= "ignore"
+		and nodedef
+		and not (
+			(
+				nodedef.sunlight_propagates
+				or nodedef.paramtype == "light"
+			)
+			and nodedef.liquidtype == "none"
+		) then
+			pos.y = pos.y-1
 			minetest.set_node(pos, {name = "default:dirt"})
 		end
 	end
 })
 
 
---
+--[[
 -- Moss growth on cobble near water
 --
 
@@ -561,7 +570,7 @@ minetest.register_abm({
 			minetest.set_node(pos, {name = "walls:mossycobble", param2 = node.param2})
 		end
 	end
-})
+})--]]
 
 
 --
