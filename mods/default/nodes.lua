@@ -10,194 +10,6 @@ language (for example pinewood and pine wood) the underscore form should be used
 --]]
 
 
---[[ Index:
-
-Stone
------
-(1. Material 2. Cobble variant 3. Brick variant 4. Modified forms)
-
-default:stone
-default:cobble
-default:stonebrick
-default:stone_block
-default:mossycobble
-
-default:desert_stone
-default:desert_cobble
-default:desert_stonebrick
-default:desert_stone_block
-
-default:sandstone
-default:sandstonebrick
-default:sandstone_block
-default:desert_sandstone
-default:desert_sandstone_brick
-default:desert_sandstone_block
-default:silver_sandstone
-default:silver_sandstone_brick
-default:silver_sandstone_block
-
-default:obsidian
-default:obsidianbrick
-default:obsidian_block
-
-Soft / Non-Stone
-----------------
-(1. Material 2. Modified forms)
-
-default:dirt
-default:dirt_with_grass
-default:dirt_with_grass_footsteps
-default:dirt_with_dry_grass
-default:dirt_with_snow
-default:dirt_with_rainforest_litter
-
-default:sand
-default:desert_sand
-default:silver_sand
-
-default:gravel
-
-default:clay
-
-default:snow
-default:snowblock
-
-default:ice
-
-Trees
------
-(1. Trunk 2. Fabricated trunk 3. Leaves 4. Sapling 5. Fruits)
-
-default:tree
-default:wood
-default:leaves
-default:sapling
-default:apple
-
-default:jungletree
-default:junglewood
-default:jungleleaves
-default:junglesapling
-
-default:pine_tree
-default:pine_wood
-default:pine_needles
-default:pine_sapling
-
-default:acacia_tree
-default:acacia_wood
-default:acacia_leaves
-default:acacia_sapling
-
-default:aspen_tree
-default:aspen_wood
-default:aspen_leaves
-default:aspen_sapling
-
-Ores
-----
-(1. In stone 2. Blocks)
-
-default:stone_with_coal
-default:coalblock
-
-default:stone_with_iron
-default:steelblock
-
-default:stone_with_copper
-default:copperblock
-default:bronzeblock
-
-default:stone_with_gold
-default:goldblock
-
-default:stone_with_mese
-default:mese
-
-default:stone_with_diamond
-default:diamondblock
-
-Plantlife
----------
-
-default:cactus
-default:papyrus
-default:dry_shrub
-default:junglegrass
-
-default:grass_1
-default:grass_2
-default:grass_3
-default:grass_4
-default:grass_5
-
-default:dry_grass_1
-default:dry_grass_2
-default:dry_grass_3
-default:dry_grass_4
-default:dry_grass_5
-
-default:bush_stem
-default:bush_leaves
-default:acacia_bush_stem
-default:acacia_bush_leaves
-
-Corals
-------
-
-default:coral_brown
-default:coral_orange
-default:coral_skeleton
-
-Liquids
--------
-(1. Source 2. Flowing)
-
-default:water_source
-default:water_flowing
-
-default:river_water_source
-default:river_water_flowing
-
-default:lava_source
-default:lava_flowing
-
-Tools / "Advanced" crafting / Non-"natural"
--------------------------------------------
-
-default:chest
-default:chest_locked
-
-default:bookshelf
-
-default:sign_wall_wood
-default:sign_wall_steel
-
-default:ladder_wood
-default:ladder_steel
-
-default:fence_wood
-default:fence_acacia_wood
-default:fence_junglewood
-default:fence_pine_wood
-default:fence_aspen_wood
-
-default:glass
-default:obsidian_glass
-
-default:brick
-
-default:meselamp
-default:mese_post_light
-
-Misc
-----
-
-default:cloud
-
---]]
-
 --
 -- Stone
 --
@@ -1404,6 +1216,24 @@ minetest.register_node("default:water_source", {
 				length = 2.0,
 			},
 		},
+		{
+			name = "default_water_source_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 2.0,
+			},
+		},
+		{
+			name = "default_water_flowing_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 0.8,
+			},
+		},
 	},
 	special_tiles = {
 		-- New-style water source material (mostly unused)
@@ -1589,6 +1419,24 @@ minetest.register_node("default:lava_source", {
 				aspect_w = 16,
 				aspect_h = 16,
 				length = 3.0,
+			},
+		},
+		{
+			name = "default_lava_source_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 3.0,
+			},
+		},
+		{
+			name = "default_lava_flowing_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 3.3,
 			},
 		},
 	},
