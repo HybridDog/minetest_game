@@ -251,7 +251,6 @@ function default.register_ores()
 
 	-- Coal
 
-
 	minetest.register_ore({
 		ore_type       = "scatter",
 		ore            = "default:stone_with_coal",
