@@ -46,7 +46,7 @@ local function add_simple_flower(name, desc, box, f_groups)
 		paramtype = "light",
 		walkable = false,
 		buildable_to = true,
-		stack_max = 99,
+		stack_max = 121,
 		groups = f_groups,
 		sounds = default.node_sound_leaves_defaults(),
 		selection_box = {
@@ -203,7 +203,7 @@ minetest.register_abm({
 	interval = 11,
 	chance = 50,
 	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) == 15 then
+		if minetest.get_node_light(pos) == 15 then
 			minetest.remove_node(pos)
 			return
 		end
@@ -213,7 +213,8 @@ minetest.register_abm({
 			z = pos.z + math.random(-2, 2)
 		}
 		local random_node = minetest.get_node_or_nil(random)
-		if not random_node or random_node.name ~= "air" then
+		if not random_node
+		or random_node.name ~= "air" then
 			return
 		end
 		local node_under = minetest.get_node_or_nil({x = random.x,
