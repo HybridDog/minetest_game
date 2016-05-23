@@ -111,7 +111,9 @@ minetest.register_on_leaveplayer(function(player)
 end)
 
 
-if not minetest.is_singleplayer() then
+if minetest.is_singleplayer() then
+	return
+end
 
 -- Localize for better performance.
 local player_set_animation = default.player_set_animation
@@ -125,14 +127,15 @@ minetest.register_globalstep(function(dtime)
 		local name = player:get_player_name()
 		local model_name = player_model[name]
 		local model = model_name and models[model_name]
-		if model and not player_attached[name] then
-			local controls = player:get_player_control()
-			local walking = false
-			local animation_speed_mod = model.animation_speed or 30
-
-			-- Determine if the player is walking
-			if controls.up or controls.down or controls.left or controls.right then
-				walking = true
+		if model
+		and not player_attached[name] then
+			local pos = player:getpos()
+			pos.y = 0
+			local lastpos = ps[name] or {x=0, y=0, z=0}
+			local v
+			if not vector.equals(lastpos, pos) then
+				ps[name] = pos
+				v = 6*vector.distance(lastpos, pos)/dtime
 			end
 
 			local controls = player:get_player_control()
@@ -158,5 +161,3 @@ minetest.register_globalstep(function(dtime)
 		end
 	end
 end)
-
-end
