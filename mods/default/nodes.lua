@@ -2308,6 +2308,15 @@ minetest.register_node("default:river_water_source", {
 				length = 2.0,
 			},
 		},
+		{
+			name = "default_water_flowing_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 0.8,
+			},
+		},
 	},
 	use_texture_alpha = "blend",
 	paramtype = "light",
@@ -2404,6 +2413,15 @@ minetest.register_node("default:lava_source", {
 				aspect_w = 16,
 				aspect_h = 16,
 				length = 3.0,
+			},
+		},
+		{
+			name = "default_lava_flowing_animated.png",
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 3.3,
 			},
 		},
 	},
