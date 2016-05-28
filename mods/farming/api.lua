@@ -101,13 +101,17 @@ function farming.register_hoe(name, def)
 	end
 end
 
+local function simulate_abm_time(i, c)
+	return i * math.ceil(math.log(1 - math.random()) / math.log((c - 1) / c))
+end
+
 -- how often node timers for plants will tick, +/- some random value
 local function tick(pos)
-	minetest.get_node_timer(pos):start(math.random(166, 286))
+	minetest.get_node_timer(pos):start(simulate_abm_time(1, math.random(166, 286)))
 end
 -- how often a growth failure tick is retried (e.g. too dark)
 local function tick_again(pos)
-	minetest.get_node_timer(pos):start(math.random(40, 80))
+	minetest.get_node_timer(pos):start(simulate_abm_time(1, math.random(40, 80)))
 end
 
 -- Seed placement
@@ -231,6 +235,7 @@ function farming.register_plant(name, def)
 	farming.registered_plants[pname] = def
 
 	-- Register seed
+	local mname,pname = unpack(name:split(":"))
 	local lbm_nodes = {mname .. ":seed_" .. pname}
 	local g = {seed = 1, snappy = 3, attached_node = 1, flammable = 2}
 	for k, v in pairs(def.fertility) do
