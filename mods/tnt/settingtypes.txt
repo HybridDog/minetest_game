@@ -1,0 +1,3 @@
+#    Enables registering tnt nodes and their craft recipe.
+#    Registering lit tnt nodes is not affected by this setting.
+enable_tnt (Enable TNT) bool nil
