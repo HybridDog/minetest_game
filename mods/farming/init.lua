@@ -6,6 +6,20 @@ local S = minetest.get_translator("farming")
 -- Global farming namespace
 
 farming = {}
+--[[
+local _farming = {}
+setmetatable(farming, {
+	__index = function(_, name)
+		return _farming[name]
+	end,
+	__newindex = function(_, name, value)
+		if _farming[name] then
+			print("### Mod "..minetest.get_current_modname().." overrides farming."..name)
+		end
+		_farming[name] = value
+	end
+})--]]
+
 farming.path = minetest.get_modpath("farming")
 farming.get_translator = S
 
