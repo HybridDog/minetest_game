@@ -5,7 +5,7 @@ minetest.register_node("nyancat:nyancat", {
 	paramtype = "light",
 	light_source = default.LIGHT_MAX,
 	paramtype2 = "facedir",
-	groups = {cracky = 2},
+	groups = {cracky = 2, fall_damage_add_percent = -88},
 	is_ground_content = false,
 	legacy_facedir_simple = true,
 	sounds = default.node_sound_defaults(),

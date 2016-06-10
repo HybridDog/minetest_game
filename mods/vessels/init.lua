@@ -38,7 +38,8 @@ minetest.register_node("vessels:shelf", {
 		"default_wood.png", "vessels_shelf.png", "vessels_shelf.png"},
 	paramtype2 = "facedir",
 	is_ground_content = false,
-	groups = {choppy = 3, oddly_breakable_by_hand = 2, flammable = 3},
+	groups = {choppy = 3, oddly_breakable_by_hand = 2, flammable = 3,
+		fall_damage_add_percent = -14},
 	sounds = default.node_sound_wood_defaults(),
 
 	on_construct = function(pos)
