@@ -298,7 +298,8 @@ default.chest.register_chest("chest", {
 	sounds = default.node_sound_wood_defaults(),
 	sound_open = "default_chest_open",
 	sound_close = "default_chest_close",
-	groups = {choppy = 2, oddly_breakable_by_hand = 2},
+	groups = {choppy = 2, oddly_breakable_by_hand = 2,
+		fall_damage_add_percent = -15},
 })
 
 default.chest.register_chest("chest_locked", {
@@ -314,6 +315,7 @@ default.chest.register_chest("chest_locked", {
 	sounds = default.node_sound_wood_defaults(),
 	sound_open = "default_chest_open",
 	sound_close = "default_chest_close",
-	groups = {choppy = 2, oddly_breakable_by_hand = 2},
+	groups = {choppy = 2, oddly_breakable_by_hand = 2,
+		fall_damage_add_percent = -15},
 	protected = true,
 })
