@@ -159,7 +159,7 @@ function stairs.register_stair(data, extradef, groups, images, description, soun
 	local origdef = minetest.registered_nodes[origname]
 	if not origdef then
 		origdef = {}
-		minetest.log("error", "[stairs] "..origname.." should exist before adding a stair for it.")
+		minetest.log("error", "[stairs] "..dump(origname).." should exist before adding a stair for it.")
 	end
 
 	local def = {}
