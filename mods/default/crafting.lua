@@ -170,7 +170,7 @@ for _,t in pairs({
 	{"diamond", "diamondblock"},
 	{"mese_crystal", "mese"},
 	{"obsidian_shard", "obsidian"},
-	{"default:mese_crystal_fragment", "default:mese_crystal"}
+	{"default:mese_crystal_fragment", "default:mese_crystal"},
 	{"snow", "snowblock"},
 
 	{"sandstone", "sandstone_block", false},
