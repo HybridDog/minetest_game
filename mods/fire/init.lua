@@ -30,7 +30,6 @@ local flamedef = {
 	buildable_to = true,
 	sunlight_propagates = true,
 	damage_per_second = 4,
-	groups = {igniter = 2, dig_immediate = 3, not_in_creative_inventory = 1},
 	on_timer = function(pos)
 		local f = minetest.find_node_near(pos, 1, {"group:flammable"})
 		if not f then
@@ -40,20 +39,32 @@ local flamedef = {
 		-- Restart timer
 		return true
 	end,
-	drop = "",
 
 	on_construct = function(pos)
 		minetest.get_node_timer(pos):start(math.random(30, 60))
 	end,
+	groups = {igniter = 2, dig_immediate = 3},
+
+	drop = "",
 }
 minetest.register_node("fire:permanent_flame", table.copy(flamedef))
 
 flamedef.description = "Basic Flame"
+flamedef.groups.not_in_creative_inventory = nil
+flamedef.on_timer = function(pos)
+	local f = minetest.find_node_near(pos, 1, {"group:flammable"})
+	if f then
+		-- restart timer
+		return true
+	end
+	minetest.remove_node(pos)
+end
 flamedef.on_construct = function(pos)
-	minetest.after(0, fire.on_flame_add_at, pos)
+	minetest.get_node_timer(pos):start(math.random(30, 60))
+	minetest.after(0, fire.update_sounds_around, pos)
 end
 flamedef.on_destruct = function(pos)
-	minetest.after(0, fire.on_flame_remove_at, pos)
+	minetest.after(0, fire.update_sounds_around, pos)
 end
 
 minetest.register_node("fire:basic_flame", flamedef)
