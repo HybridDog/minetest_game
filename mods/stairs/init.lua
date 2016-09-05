@@ -667,9 +667,10 @@ stairs.register_stair_and_slab(
 	default.node_sound_metal_defaults()
 )
 
-stairs.register_stair_and_slab({origin = "default:mossycobble", add_crafting = false}, {groups = {cracky = 3}})
-minetest.register_alias("stairs:slab_mossycobble", "default:slab_mossycobble")
-minetest.register_alias("stairs:stair_mossycobble", "default:stair_mossycobble")
+stairs.register_stair({origin = "default:mossycobble", add_crafting = false, fixed_name = "stairs:stair_mossycobble"}, {groups = {cracky = 3}})
+stairs.register_slab({origin = "default:mossycobble", add_crafting = false, fixed_name = "stairs:slab_mossycobble"}, {groups = {cracky = 3}})
+--minetest.register_alias("stairs:slab_mossycobble", "default:slab_mossycobble")
+--minetest.register_alias("stairs:stair_mossycobble", "default:stair_mossycobble")
 
 
 
