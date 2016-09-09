@@ -147,6 +147,14 @@ farming.place_seed = function(itemstack, placer, pointed_thing, plantname)
 	local under = minetest.get_node(pt.under)
 	local above = minetest.get_node(pt.above)
 
+	local udef = minetest.registered_nodes[under.name]
+	if not udef then
+		return
+	end
+	if udef.on_rightclick then
+		return udef.on_rightclick(pt.under, under, placer, itemstack, pt)
+	end
+
 	local player_name = placer and placer:get_player_name() or ""
 
 	if minetest.is_protected(pt.under, player_name) then
@@ -181,7 +189,7 @@ farming.place_seed = function(itemstack, placer, pointed_thing, plantname)
 		return itemstack
 	end
 
-	-- add the node and remove 1 item from the itemstack
+	-- add the node
 	minetest.log("action", player_name .. " places node " .. plantname .. " at " ..
 		minetest.pos_to_string(pt.above))
 	minetest.add_node(pt.above, {name = plantname, param2 = 1})
