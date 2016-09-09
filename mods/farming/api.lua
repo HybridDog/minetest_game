@@ -127,10 +127,24 @@ end
 
 -- Seed placement
 function farming.place_seed(itemstack, placer, pt, plantname)
-	-- check if pointing at a node's top
+	-- check if pointing at a node
 	if not pt
-	or pt.type ~= "node"
-	or pt.above.y ~= pt.under.y+1 then
+	or pt.type ~= "node" then
+		return
+	end
+
+	local under = minetest.get_node(pt.under)
+	local udef = minetest.registered_nodes[under.name]
+	if not udef then
+		return
+	end
+
+	-- if under has one, call its on_rightclick and abort
+	if udef.on_rightclick then
+		return udef.on_rightclick(pt.under, under, placer, itemstack, pt)
+	end
+
+	if pt.above.y ~= pt.under.y+1 then
 		return
 	end
 
@@ -153,13 +167,11 @@ function farming.place_seed(itemstack, placer, pt, plantname)
 	end
 
 	-- check if pointing at soil
-	local under = minetest.get_node(pt.under)
-	if not minetest.registered_nodes[under.name] or
-			minetest.get_item_group(under.name, "soil") < 2 then
+	if minetest.get_item_group(under.name, "soil") < 2 then
 		return
 	end
 
-	-- add the node and remove 1 item from the itemstack
+	-- add the node
 	minetest.add_node(pt.above, {name = plantname, param2 = 1})
 	tick(pt.above)
 
@@ -167,6 +179,7 @@ function farming.place_seed(itemstack, placer, pt, plantname)
 		return
 	end
 
+	-- remove 1 item from the itemstack
 	itemstack:take_item()
 	return itemstack
 end
