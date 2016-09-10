@@ -3,6 +3,8 @@
 -- Formspecs
 --
 
+local update_step = 1.0
+
 local function active_formspec(fuel_percent, item_percent)
 	local formspec =
 		"size[8,8.5]"..
@@ -274,11 +276,11 @@ minetest.register_node("default:furnace", {
 	end,
 
 	on_metadata_inventory_move = function(pos)
-		minetest.get_node_timer(pos):start(1.0)
+		minetest.get_node_timer(pos):start(update_step)
 	end,
 	on_metadata_inventory_put = function(pos)
 		-- start timer function, it will sort out whether furnace can burn or not.
-		minetest.get_node_timer(pos):start(1.0)
+		minetest.get_node_timer(pos):start(update_step)
 	end,
 	on_blast = function(pos)
 		local drops = {}
