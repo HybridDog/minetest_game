@@ -3,7 +3,7 @@
 -- Formspecs
 --
 
-local update_step = 1.0
+local update_step = tonumber(minetest.setting_get"default_furnace_update_step") or 1.0
 
 local function active_formspec(fuel_percent, item_percent)
 	local formspec =
