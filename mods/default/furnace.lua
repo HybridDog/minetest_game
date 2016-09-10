@@ -10,6 +10,9 @@ local furnace_fire_sounds = {}
 -- Formspecs
 --
 
+local update_step = tonumber(minetest.setting_get"default_furnace_update_step")
+	or 1.0
+
 function default.get_furnace_active_formspec(fuel_percent, item_percent)
 	return "size[8,8.5]"..
 		"list[context;src;2.75,0.5;1,1;]"..
@@ -387,11 +390,11 @@ core.register_node("default:furnace", apply_logger({
 	end,
 
 	on_metadata_inventory_move = function(pos)
-		core.get_node_timer(pos):start(1.0)
+		core.get_node_timer(pos):start(update_step)
 	end,
 	on_metadata_inventory_put = function(pos)
 		-- start timer function, it will sort out whether furnace can burn or not.
-		core.get_node_timer(pos):start(1.0)
+		core.get_node_timer(pos):start(update_step)
 	end,
 	on_metadata_inventory_take = function(pos)
 		-- check whether the furnace is empty or not.
