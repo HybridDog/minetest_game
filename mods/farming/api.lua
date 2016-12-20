@@ -291,10 +291,11 @@ farming.register_plant = function(name, def)
 		def.fertility = {}
 	end
 
+	local mname,pname = unpack(name:split(":"))
+
 	farming.registered_plants[pname] = def
 
 	-- Register seed
-	local mname,pname = unpack(name:split(":"))
 	local lbm_nodes = {mname .. ":seed_" .. pname}
 	local g = {seed = 1, snappy = 3, attached_node = 1, flammable = 2}
 	for k, v in pairs(def.fertility) do
