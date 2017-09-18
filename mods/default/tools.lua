@@ -92,7 +92,7 @@ minetest.register_tool("default:pick_mese", {
 		full_punch_interval = 0.9,
 		max_drop_level=3,
 		groupcaps={
-			cracky = {times={[1]=2.4, [2]=1.2, [3]=0.60}, uses=20, maxlevel=3},
+			cracky = {times={[1]=2.4, [2]=1.2, [3]=0.5}, uses=20, maxlevel=3},
 		},
 		damage_groups = {fleshy=5},
 	},
@@ -108,7 +108,7 @@ minetest.register_tool("default:pick_diamond", {
 		full_punch_interval = 0.9,
 		max_drop_level=3,
 		groupcaps={
-			cracky = {times={[1]=2.0, [2]=1.0, [3]=0.50}, uses=30, maxlevel=3},
+			cracky = {times={[1]=2.0, [2]=1.0, [3]=0.6}, uses=30, maxlevel=3},
 		},
 		damage_groups = {fleshy=5},
 	},
@@ -298,7 +298,7 @@ minetest.register_tool("default:axe_mese", {
 		full_punch_interval = 0.9,
 		max_drop_level=1,
 		groupcaps={
-			choppy={times={[1]=2.20, [2]=1.00, [3]=0.60}, uses=20, maxlevel=3},
+			choppy={times={[1]=2.20, [2]=1.00, [3]=0.5}, uses=20, maxlevel=3},
 		},
 		damage_groups = {fleshy=6},
 	},
@@ -314,7 +314,7 @@ minetest.register_tool("default:axe_diamond", {
 		full_punch_interval = 0.9,
 		max_drop_level=1,
 		groupcaps={
-			choppy={times={[1]=2.10, [2]=0.90, [3]=0.50}, uses=30, maxlevel=3},
+			choppy={times={[1]=2.10, [2]=0.90, [3]=0.6}, uses=30, maxlevel=3},
 		},
 		damage_groups = {fleshy=7},
 	},
@@ -398,7 +398,7 @@ minetest.register_tool("default:sword_mese", {
 		full_punch_interval = 0.7,
 		max_drop_level=1,
 		groupcaps={
-			snappy={times={[1]=2.0, [2]=1.00, [3]=0.35}, uses=30, maxlevel=3},
+			snappy={times={[1]=2.0, [2]=1.00, [3]=0.3}, uses=30, maxlevel=3},
 		},
 		damage_groups = {fleshy=7},
 	},
@@ -414,7 +414,7 @@ minetest.register_tool("default:sword_diamond", {
 		full_punch_interval = 0.7,
 		max_drop_level=1,
 		groupcaps={
-			snappy={times={[1]=1.90, [2]=0.90, [3]=0.30}, uses=40, maxlevel=3},
+			snappy={times={[1]=1.90, [2]=0.90, [3]=0.35}, uses=40, maxlevel=3},
 		},
 		damage_groups = {fleshy=8},
 	},
