@@ -3,7 +3,6 @@
 -- TODO Ignore group:flower
 farming.registered_plants = {}
 
-local creative = minetest.setting_getbool("creative_mode")
 function farming.hoe_on_use(itemstack, user, pt, max_uses)
 	-- check if pointing at a node's top
 	if not pt or pt.type ~= "node" or pt.above.y ~= pt.under.y+1 then
