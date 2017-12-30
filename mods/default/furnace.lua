@@ -7,7 +7,7 @@ local S = default.get_translator
 -- Formspecs
 --
 
-local update_step = tonumber(minetest.setting_get"default_furnace_update_step")
+local update_step = tonumber(minetest.settings:get"default_furnace_update_step")
 	or 1.0
 
 function default.get_furnace_active_formspec(fuel_percent, item_percent)
