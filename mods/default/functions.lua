@@ -353,16 +353,22 @@ local function leafdecay_after_destruct(pos, oldnode, def)
 	end
 end
 
-local function leafdecay_on_timer(pos, def)
-	if minetest.find_node_near(pos, def.radius, def.trunks) then
-		return false
+local leaves_defs = {}
+local function leafdecay_on_timer(pos, nodename)
+	local defs = leaves_defs[nodename]
+	-- abort if a trunk is nearby
+	for i = 1, #defs do
+		local def = defs[i]
+		if minetest.find_node_near(pos, def.radius, def.trunks) then
+			return false
+		end
 	end
 
-	local node = minetest.get_node(pos)
-	local drops = minetest.get_node_drops(node.name)
+	local drops = minetest.get_node_drops(nodename)
 	for _, item in ipairs(drops) do
 		local is_leaf
-		for _, v in pairs(def.leaves) do
+		-- take the first leaves table, usually #defs is 1 anyway
+		for _, v in pairs(defs[1].leaves) do
 			if v == item then
 				is_leaf = true
 			end
@@ -379,6 +385,7 @@ local function leafdecay_on_timer(pos, def)
 
 	minetest.remove_node(pos)
 	minetest.check_for_falling(pos)
+	return true
 end
 
 function default.register_leafdecay(def)
@@ -386,18 +393,37 @@ function default.register_leafdecay(def)
 	assert(def.trunks)
 	assert(def.radius)
 	for _, v in pairs(def.trunks) do
-		minetest.override_item(v, {
-			after_destruct = function(pos, oldnode)
-				leafdecay_after_destruct(pos, oldnode, def)
-			end,
-		})
+		local ndef = minetest.registered_nodes[v]
+		if not ndef.after_destruct then
+			minetest.override_item(v, {
+				after_destruct = function(pos, oldnode)
+					leafdecay_after_destruct(pos, oldnode, def)
+				end,
+			})
+		else
+			local prev_func = ndef.after_destruct
+			minetest.override_item(v, {
+				after_destruct = function(pos, oldnode)
+					prev_func(pos, oldnode)
+					leafdecay_after_destruct(pos, oldnode, def)
+				end,
+			})
+		end
 	end
 	for _, v in pairs(def.leaves) do
-		minetest.override_item(v, {
-			on_timer = function(pos)
-				leafdecay_on_timer(pos, def)
-			end,
-		})
+		local defs = leaves_defs[v]
+		if not defs then
+			leaves_defs[v] = {def}
+			assert(not minetest.registered_nodes[v].on_timer,
+				"leafdecay: " .. v .. " already has an on_timer.")
+			minetest.override_item(v, {
+				on_timer = function(pos)
+					leafdecay_on_timer(pos, v)
+				end,
+			})
+		else
+			defs[#defs+1] = def
+		end
 	end
 end
 
