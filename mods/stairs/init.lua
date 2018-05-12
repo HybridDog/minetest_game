@@ -194,9 +194,9 @@ function stairs.register_stair(data, extradef, groups, images, description,
 	end
 
 	def.drawtype = "nodebox"
-	def.node_box = stairbox
 	def.paramtype = "light"
 	def.paramtype2 = "facedir"
+	def.node_box = stairbox
 	def.on_place = on_place_stair
 
 	if extradef then
@@ -463,6 +463,7 @@ function stairs.register_stair_inner(data, extradef,
 		def.description = origdef.description.." Stair Inner"
 	end
 
+	def.drawtype = "nodebox"
 	def.paramtype = "light"
 	def.paramtype2 = "facedir"
 	def.node_box = innerbox
@@ -578,6 +579,7 @@ function stairs.register_stair_outer(data, extradef,
 		def.description = origdef.description.." Stair Outer"
 	end
 
+	def.drawtype = "nodebox"
 	def.paramtype = "light"
 	def.paramtype2 = "facedir"
 	def.node_box = outerbox
