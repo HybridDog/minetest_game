@@ -62,16 +62,19 @@ local function allow_metadata_inventory_put(pos, listname, index, stack, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
 	if listname == "fuel" then
-		if minetest.get_craft_result({method="fuel", width=1, items={stack}}).time ~= 0 then
+		local is_fuel = minetest.get_craft_result({method = "fuel", width = 1,
+			items = {stack}}).time ~= 0
+		if is_fuel then
 			if inv:is_empty("src") then
 				meta:set_string("infotext", S("Furnace is empty"))
 			end
 			return stack:get_count()
-		else
-			return 0
 		end
+		return 0
 	elseif listname == "src" then
-		return stack:get_count()
+		local is_cookable = minetest.get_craft_result({method = "cooking",
+			width = 1, items = {stack}}).time ~= 0
+		return is_cookable and stack:get_count() or 0
 	elseif listname == "dst" then
 		return 0
 	end
