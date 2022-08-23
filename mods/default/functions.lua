@@ -216,7 +216,7 @@ local function cool_wf_vm(pos, node1, node2)
 	manip:set_data(nodes)
 	manip:write_to_map()
 	print(string.format("[default] lava cooled at ("..pos.x.."|"..pos.y.."|"..pos.z..") after ca. %.2fs", os.clock() - t1))
-	local t1 = os.clock()
+	t1 = os.clock()
 	manip:update_map()
 	manip:update_liquids()
 	print(string.format("[default] map updated after ca. %.2fs", os.clock() - t1))
@@ -224,7 +224,7 @@ end
 
 
 local del1 = 0
-local count = 0
+local num_recently_cooled = 0
 
 local converts = {
 	["default:lava_source"] = "default:obsidian",
@@ -234,14 +234,14 @@ function default.cool_lava(pos, node)
 	local result = converts[node.name]
 	local del2 = tonumber(os.clock())
 	if del2-del1 < 0.1
-	and count > 10 then
+	and num_recently_cooled > 10 then
 		cool_wf_vm(pos, node.name, result)
-		count = 0
+		num_recently_cooled = 0
 	else
 		minetest.set_node(pos, {name=result})
 		smoke_and_sound(pos)
 		if del2-del1 < 0.1 then
-			count = count+1
+			num_recently_cooled = num_recently_cooled+1
 		end
 	end
 end
