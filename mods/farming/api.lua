@@ -270,8 +270,7 @@ end
 
 -- Register plants
 farming.register_plant = function(name, def)
-	local mname = name:split(":")[1]
-	local pname = name:split(":")[2]
+	local mname, pname = unpack(name:split(":"))
 
 	-- Check def table
 	if not def.description then
@@ -295,8 +294,6 @@ farming.register_plant = function(name, def)
 	if not def.fertility then
 		def.fertility = {}
 	end
-
-	local mname,pname = unpack(name:split(":"))
 
 	farming.registered_plants[pname] = def
 
